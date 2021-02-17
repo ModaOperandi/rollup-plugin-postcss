@@ -1,5 +1,5 @@
 {
-  "name": "rollup-plugin-postcss",
+  "name": "@moda/rollup-plugin-postcss",
   "version": "3.0.0",
   "description": "Seamless integration between Rollup and PostCSS",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/egoist/rollup-plugin-postcss.git"
+    "url": "git+https://github.com/ModaOperandi/rollup-plugin-postcss.git"
   },
   "keywords": [
     "postcss",
@@ -44,8 +44,10 @@
     "jest": "^26.6.3",
     "less": "^3.12.2",
     "node-sass": "^5.0.0",
+    "node-sass-package-importer": "^5.3.2",
     "postcss": "^8.1.14",
     "rollup": "^2.34.2",
+    "semantic-release": "^17.3.9",
     "stylus": "^0.54.8",
     "sugarss": "^3.0.3",
     "xo": "^0.35.0"
@@ -102,5 +104,8 @@
       "master",
       "next"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

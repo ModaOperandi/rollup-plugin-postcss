@@ -1,6 +1,4 @@
-import path from 'path'
 import pify from 'pify'
-import resolve from 'resolve'
 import PQueue from 'p-queue'
 import { loadModule } from './utils/load-module'
 
@@ -8,15 +6,6 @@ import { loadModule } from './utils/load-module'
 // See: https://github.com/sass/node-sass/issues/857
 const threadPoolSize = process.env.UV_THREADPOOL_SIZE || 4
 const workQueue = new PQueue({ concurrency: threadPoolSize - 1 })
-
-const moduleRe = /^~([a-z\d]|@).+/i
-
-const getUrlOfPartial = url => {
-  const parsedUrl = path.parse(url)
-  return `${parsedUrl.dir}${path.sep}_${parsedUrl.base}`
-}
-
-const resolvePromise = pify(resolve)
 
 // List of supported SASS modules in the order of preference
 const sassModuleIds = ['node-sass', 'sass']
@@ -37,46 +26,7 @@ export default {
           data: data + code,
           indentedSyntax: /\.sass$/.test(this.id),
           sourceMap: this.sourceMap,
-          importer: [
-            (url, importer, done) => {
-              if (!moduleRe.test(url)) return done({ file: url })
-
-              const moduleUrl = url.slice(1)
-              const partialUrl = getUrlOfPartial(moduleUrl)
-
-              const options = {
-                basedir: path.dirname(importer),
-                extensions: ['.scss', '.sass', '.css']
-              }
-              const finishImport = id => {
-                done({
-                  // Do not add `.css` extension in order to inline the file
-                  file: id.endsWith('.css') ? id.replace(/\.css$/, '') : id
-                })
-              }
-
-              const next = () => {
-                // Catch all resolving errors, return the original file and pass responsibility back to other custom importers
-                done({ file: url })
-              }
-
-              // Give precedence to importing a partial
-              resolvePromise(partialUrl, options)
-                .then(finishImport)
-                .catch(error => {
-                  if (
-                    error.code === 'MODULE_NOT_FOUND' ||
-                    error.code === 'ENOENT'
-                  ) {
-                    resolvePromise(moduleUrl, options)
-                      .then(finishImport)
-                      .catch(next)
-                  } else {
-                    next()
-                  }
-                })
-            }
-          ].concat(this.options.importer || [])
+          importer: this.options.importer || []
         })
           .then(result => {
             for (const file of result.stats.includedFiles) {
@@ -106,7 +56,8 @@ function loadSassOrThrow() {
   // Throwing exception if module can't be loaded
   throw new Error(
     'You need to install one of the following packages: ' +
-    sassModuleIds.map(moduleId => `"${moduleId}"`).join(', ') + ' ' +
-    'in order to process SASS files'
+      sassModuleIds.map(moduleId => `"${moduleId}"`).join(', ') +
+      ' ' +
+      'in order to process SASS files'
   )
 }

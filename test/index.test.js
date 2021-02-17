@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs-extra'
 import { rollup } from 'rollup'
+import packageImporter from 'node-sass-package-importer'
 import postcss from '../src'
 
 process.env.ROLLUP_POSTCSS_TEST = true
@@ -407,7 +408,12 @@ snapshotMany('sass', [
   },
   {
     title: 'import',
-    input: 'sass-import/index.js'
+    input: 'sass-import/index.js',
+    options: {
+      use: {
+        sass: { importer: [packageImporter({ cwd: fixture('sass-import') })] }
+      }
+    }
   }
 ])
 
